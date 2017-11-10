@@ -4,5 +4,16 @@
 }
 
 .input {
-    width: 50% !important
+    border: 1px solid #bdc7d8;
+    border-radius: 5px;
+    padding: 8px 10px 8px 10px;
+    margin-right: 10px;
+    height: 100%;
+    width: 100% !important
+}
+
+.table{
+    border: 1px solid black;
+    padding: 3px;
+    border-spacing: 5px;
 }
