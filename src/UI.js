@@ -1,5 +1,5 @@
 import React,{Component} from 'react';
-import {Header, Segment} from 'semantic-ui-react';
+import {Header, Segment, Button, Table} from 'semantic-ui-react';
 import textAnalyzer from './textScanner';
 
 class UI extends Component {
@@ -47,12 +47,25 @@ class UI extends Component {
                   changeHandler={this.handleRun}  
                 />
                 </Segment>
-                <Segment inverted color='yellow'>
+               
+                <Segment inverted color='teal'>
                     <SourceOutput 
                         list = {this.state.lexemes}
                         label = {this.state.label}
                     />
                 </Segment>
+
+                <Segment inverted colo='blue'>
+                    <Table>
+                        <Table.Header>
+                            <Table.Row>
+                                <Table.HeaderCell>Identifier</Table.HeaderCell>
+                                <Table.HeaderCell>Value</Table.HeaderCell>
+                            </Table.Row>
+                        </Table.Header>
+                    </Table>
+                </Segment>
+
                 </Segment.Group>
             </div>
         );
@@ -81,13 +94,9 @@ class RunButton extends Component{
     render(){
 		return(
 			<div>
-				<form onSubmit={this.props.changeHandler}>
-					<input
-						id="signup-button"
-						type="submit"
-						value="RUN"
-					/>
-				</form>
+				
+                <Button onClick={this.props.changeHandler}>
+                RUN</Button>
 			</div>
 		);
 	}
@@ -96,27 +105,32 @@ class RunButton extends Component{
 class SourceOutput extends Component{
 	render(){
 		return(
-			<div>
-            <h3>LEXEMES</h3>
-			{this.props.list.map((items) => {
-				return(
-                    <table className="table">
-                            <tr>
-                                <th>Lexeme</th>
-                                <th>Attribute</th>
-                            </tr>
-                        <tr value={items.id}>
-                            <td>{items.lexeme}</td>
-                            <td>{items.attribute}</td>
-                        </tr>
-                    </table>
-				);
-			}
-            )}
-            {this.props.label}
+			<div className='output'>
+            <Header>LEXEMES</Header>
+			
+            <Table celled inverted selectable size='small'>
+                <Table.Header>
+                    <Table.Row>
+                        <Table.HeaderCell>Lexeme</Table.HeaderCell>
+                        <Table.HeaderCell>Attribute</Table.HeaderCell>
+                    </Table.Row>
+                </Table.Header>
+
+                <Table.Body>
+                    {this.props.list.map((items) => {
+                        return(
+                            <Table.Row>
+                                <Table.Cell>{items.lexeme}</Table.Cell>
+                                <Table.Cell>{items.attribute}</Table.Cell>
+                            </Table.Row>
+                            );
+                    })}
+                </Table.Body>
+
+            </Table>
             </div>
-		);
-	}
+        );
+    }
 }
 
 
