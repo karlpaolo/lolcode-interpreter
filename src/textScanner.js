@@ -13,8 +13,9 @@ var count = 0;
 
 // Lines contains the array of lines from the text file
 var textAnalyzer = (content) => {
+    
     lines = content.split(/\r?\n/); //Instead of reading from the text file, the "content" variable that will be split should be the string inside the text field of the UI
-
+    tokens = [];
     for(let i = 0; i < lines.length; i++){ 
         if(commentCheck = re.SINGLECOMMENT.exec(lines[i])){
             tokens.push({id: count, lexeme: commentCheck[2], attribute: "Single line comment declaration"});

@@ -1,6 +1,6 @@
 import React,{Component} from 'react';
 import {Header, Segment} from 'semantic-ui-react';
-import textAnalyzer from './textScanner'
+import textAnalyzer from './textScanner';
 
 class UI extends Component {
     constructor(props){
@@ -43,6 +43,9 @@ class UI extends Component {
                     value={this.state.input}
                     changeHandler={this.handleinputChange}
                 />
+                <RunButton
+                  changeHandler={this.handleRun}  
+                />
                 </Segment>
                 <Segment inverted color='yellow'>
                     <SourceOutput 
@@ -51,9 +54,6 @@ class UI extends Component {
                     />
                 </Segment>
                 </Segment.Group>
-                <RunButton
-                  changeHandler={this.handleRun}  
-                />
             </div>
         );
     }
@@ -64,7 +64,7 @@ class SourceInput extends Component {
         return(
             <div>
 				<textarea 
-                    rows={10} 
+                    rows={50} 
                     placeholder='Input Source Code' 
                     autoHeight='true'
 					className = "input"
