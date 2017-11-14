@@ -16,4 +16,9 @@
     border: 1px solid black;
     padding: 3px;
     border-spacing: 5px;
+    table-layout: initial;
+}
+
+.output {
+    overflow-x: scroll;
 }
