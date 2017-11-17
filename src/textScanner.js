@@ -1,6 +1,5 @@
 import re from "./regex";
 
-
 var commentContent= "";
 var lines;
 var result;
@@ -10,20 +9,37 @@ var ofSplitStack = [];
 var anSplitStack = [];
 var tokens = [];
 var count = 0;
+var commentflag = 0;
+var multiplestatements = [];
+var multiplestatementsflag = 0;
+var multiplestatementsiterator = 0;
 
-// Lines contains the array of lines from the text file
-var textAnalyzer = (content) => {
-    
+var textAnalyzer = (content) => {  
     lines = content.split(/\r?\n/); //Instead of reading from the text file, the "content" variable that will be split should be the string inside the text field of the UI
     tokens = [];
-    for(let i = 0; i < lines.length; i++){ 
-        if(commentCheck = re.SINGLECOMMENT.exec(lines[i])){
-            tokens.push({id: count, lexeme: commentCheck[2], attribute: "Single line comment declaration"});
-            count += 1;
-            tokens.push({id: count, lexeme: commentCheck[3], attribute: "Comment content"});
-            count += 1;
-            lines[i] = commentCheck[1];
-        };
+    for(let i = 0; i < lines.length; i++){
+        //Check if line has multiplestatements
+            if((result = re.MULTIPLESTATEMENTS.exec(lines[i])) && multiplestatementsflag === 0){
+                multiplestatements = result[0].split(/,/);
+                multiplestatementsflag = multiplestatements.length;
+            }
+            
+            if(multiplestatementsflag !== 0){
+                if(multiplestatementsiterator < multiplestatementsflag){
+                    i -= 1;
+                    lines[i] = multiplestatements[multiplestatementsiterator]; 
+                    multiplestatementsiterator += 1;
+                }else{
+                    i += 1;
+                    multiplestatementsflag = 0;
+                    multiplestatementsiterator = 0;
+                }
+            }
+
+            if(commentCheck = re.SINGLECOMMENT.exec(lines[i])){
+                commentflag = 1;
+                lines[i] = commentCheck[1];
+            };
         // HAI  
             if (result = re.START.exec(lines[i])){
                 tokens.push({id: count, lexeme: result[0], attribute: "Program Starting Delimiter"});
@@ -42,15 +58,14 @@ var textAnalyzer = (content) => {
                 count += 1;
             }
         //OBTW/TLDR
-            else if(result = re.MULTIMCOMMENTSINGLE.exec(lines[i])){
-                tokens.push({id: count, lexeme: result[1], attribute: "Multicomment starting delimiter"});
-                count += 1;
-                tokens.push({id: count, lexeme: result[2], attribute: "Comment content"});
-                count += 1;
-                tokens.push({id: count, lexeme: result[3], attribute: "Multicomment ending delimiter"});
-                count += 1;
-            }
-
+        else if(result = re.MULTIMCOMMENTSINGLE.exec(lines[i])){
+            tokens.push({id: count, lexeme: result[1], attribute: "Multicomment starting delimiter"});
+            count += 1;
+            tokens.push({id: count, lexeme: result[2], attribute: "Comment content"});
+            count += 1;
+            tokens.push({id: count, lexeme: result[3], attribute: "Multicomment ending delimiter"});
+            count += 1;
+}
             else if(result = re.MULTICOMMENTSTART.exec(lines[i])){
                 tokens.push({id: count, lexeme: result[1], attribute: "Multicomment starting delimiter"});
                 count += 1;
@@ -116,10 +131,13 @@ var textAnalyzer = (content) => {
                 count += 1;
                 tokens.push({id: count, lexeme: result[2], attribute: "Assignment Operator"});
                 count += 1;
+                
                 if(result2 = re.ADDITION.exec(result[3])){
                     tokens.push({id: count, lexeme: result2[1], attribute: "Addition opcode"});
                     count += 1;
-                    anSplitStack = result2[2].split(/\s(AN)\s/);
+                    anSplitStack = result2[2].split(/(AN)/);
+                    anSplitStack.push(result2[3]);
+                    anSplitStack.push(result2[4]);
                     for(var j = 0; j < anSplitStack.length; j++){
                         ofSplitStack = anSplitStack[j].split(/\s(OF)\s/);
                         if(ofSplitStack.length > 1){
@@ -152,15 +170,8 @@ var textAnalyzer = (content) => {
                                     k += 1;
                                     tokens.push({id: count, lexeme: "SMALLR OF", attribute: "Min opcode"});
                                     count += 1;
-                                }else if(ofSplitStack[k] === "BOTH"){
-                                    k += 1;
-                                    tokens.push({id: count, lexeme: "BOTH OF", attribute: "And Comparison"});
-                                    count += 1;
-                                }else if(ofSplitStack[k] === "EITHER"){
-                                    k += 1;
-                                    tokens.push({id: count, lexeme: "EITHER OF", attribute: "Or comparison"});
-                                    count += 1;
-                                }else{
+                                }
+                                else{
                                     tokens.push({id: count, lexeme: ofSplitStack[k], attribute: "Value"});
                                     count += 1;
                                 }
@@ -174,11 +185,13 @@ var textAnalyzer = (content) => {
                         }
                     }
                 }
-
+                
                 else if(result2 = re.SUBTRACTION.exec(result[3])){
                     tokens.push({id: count, lexeme: result2[1], attribute: "Subtraction opcode"});
                     count += 1;
-                    anSplitStack = result2[2].split(/\s(AN)\s/);
+                    anSplitStack = result2[2].split(/(AN)/);
+                    anSplitStack.push(result2[3]);
+                    anSplitStack.push(result2[4]);
                     for(j = 0; j < anSplitStack.length; j++){
                         ofSplitStack = anSplitStack[j].split(/\s(OF)\s/);
                         if(ofSplitStack.length > 1){
@@ -211,15 +224,8 @@ var textAnalyzer = (content) => {
                                     k += 1;
                                     tokens.push({id: count, lexeme: "SMALLR OF", attribute: "Min opcode"});
                                     count += 1;
-                                }else if(ofSplitStack[k] === "BOTH"){
-                                    k += 1;
-                                    tokens.push({id: count, lexeme: "BOTH OF", attribute: "And Comparison"});
-                                    count += 1;
-                                }else if(ofSplitStack[k] === "EITHER"){
-                                    k += 1;
-                                    tokens.push({id: count, lexeme: "EITHER OF", attribute: "Or comparison"});
-                                    count += 1;
-                                }else{
+                                }
+                                else{
                                     tokens.push({id: count, lexeme: ofSplitStack[k], attribute: "Value"});
                                     count += 1;
                                 }
@@ -238,8 +244,12 @@ var textAnalyzer = (content) => {
                     tokens.push({id: count, lexeme: result2[1], attribute: "Multiplication opcode"});
                     count += 1;
                     anSplitStack = result2[2].split(/\s(AN)\s/);
+                    anSplitStack.push(result2[3]);
+                    anSplitStack.push(result2[4]);
                     for(j = 0; j < anSplitStack.length; j++){
                         ofSplitStack = anSplitStack[j].split(/\s(OF)\s/);
+                        anSplitStack.push(result2[3]);
+                        anSplitStack.push(result2[4]);
                         if(ofSplitStack.length > 1){
                             for(k = 0; k < ofSplitStack.length; k++){
                                 if(ofSplitStack[k] === "SUM"){
@@ -269,73 +279,6 @@ var textAnalyzer = (content) => {
                                 }else if(ofSplitStack[k] === "SMALLR"){
                                     k += 1;
                                     tokens.push({id: count, lexeme: "SMALLR OF", attribute: "Min opcode"});
-                                    count += 1;
-                                }else if(ofSplitStack[k] === "BOTH"){
-                                    k += 1;
-                                    tokens.push({id: count, lexeme: "BOTH OF", attribute: "And Comparison"});
-                                    count += 1;
-                                }else if(ofSplitStack[k] === "EITHER"){
-                                    k += 1;
-                                    tokens.push({id: count, lexeme: "EITHER OF", attribute: "Or comparison"});
-                                    count += 1;
-                                }else{
-                                    tokens.push({id: count, lexeme: ofSplitStack[k], attribute: "Value"});
-                                    count += 1;
-                                }
-                            }
-                        }else if(ofSplitStack[0] === "AN"){
-                            tokens.push({id: count, lexeme: ofSplitStack[0], attribute: "Combination opcode"});
-                            count += 1;
-                        }else{
-                            tokens.push({id: count, lexeme: ofSplitStack[0], attribute: "Value"});
-                            count += 1;
-                        }
-                    }
-                }
-
-                else if(result2 = re.MULTIPLICATION.exec(result[3])){
-                    tokens.push({id: count, lexeme: result2[1], attribute: "Multiplication opcode"});
-                    count += 1;
-                    anSplitStack = result2[2].split(/\s(AN)\s/);
-                    for(j = 0; j < anSplitStack.length; j++){
-                        ofSplitStack = anSplitStack[j].split(/\s(OF)\s/);
-                        if(ofSplitStack.length > 1){
-                            for(k = 0; k < ofSplitStack.length; k++){
-                                if(ofSplitStack[k] === "SUM"){
-                                    k += 1;
-                                    tokens.push({id: count, lexeme: "SUM OF", attribute: "Addition opcode"});
-                                    count += 1;
-                                }else if(ofSplitStack[k] === "DIFF"){
-                                    k += 1;
-                                    tokens.push({id: count, lexeme: "DIFF OF", attribute: "Subtraction opcode"});
-                                    count += 1;
-                                }else if(ofSplitStack[k] === "PRODUKT"){
-                                    k += 1;
-                                    tokens.push({id: count, lexeme: "PRODUKT OF", attribute: "Multiplication opcode"});
-                                    count += 1;
-                                }else if(ofSplitStack[k] === "QUOSHUNT"){
-                                    k += 1;
-                                    tokens.push({id: count, lexeme: "QUOSHUNT OF", attribute: "Division opcode"});
-                                    count += 1;
-                                }else if(ofSplitStack[k] === "MOD"){
-                                    k += 1;
-                                    tokens.push({id: count, lexeme: "MOD OF", attribute: "Modular opcode"});
-                                    count += 1;
-                                }else if(ofSplitStack[k] === "BIGGR"){
-                                    k += 1;
-                                    tokens.push({id: count, lexeme: "BIGGR OF", attribute: "Max opcode"});
-                                    count += 1;
-                                }else if(ofSplitStack[k] === "SMALLR"){
-                                    k += 1;
-                                    tokens.push({id: count, lexeme: "SMALLR OF", attribute: "Min opcode"});
-                                    count += 1;
-                                }else if(ofSplitStack[k] === "BOTH"){
-                                    k += 1;
-                                    tokens.push({id: count, lexeme: "BOTH OF", attribute: "And Comparison"});
-                                    count += 1;
-                                }else if(ofSplitStack[k] === "EITHER"){
-                                    k += 1;
-                                    tokens.push({id: count, lexeme: "EITHER OF", attribute: "Or comparison"});
                                     count += 1;
                                 }else{
                                     tokens.push({id: count, lexeme: ofSplitStack[k], attribute: "Value"});
@@ -356,6 +299,8 @@ var textAnalyzer = (content) => {
                     tokens.push({id: count, lexeme: result2[1], attribute: "Division opcode"});
                     count += 1;
                     anSplitStack = result2[2].split(/\s(AN)\s/);
+                    anSplitStack.push(result2[3]);
+                    anSplitStack.push(result2[4]);
                     for(j = 0; j < anSplitStack.length; j++){
                         ofSplitStack = anSplitStack[j].split(/\s(OF)\s/);
                         if(ofSplitStack.length > 1){
@@ -387,14 +332,6 @@ var textAnalyzer = (content) => {
                                 }else if(ofSplitStack[k] === "SMALLR"){
                                     k += 1;
                                     tokens.push({id: count, lexeme: "SMALLR OF", attribute: "Min opcode"});
-                                    count += 1;
-                                }else if(ofSplitStack[k] === "BOTH"){
-                                    k += 1;
-                                    tokens.push({id: count, lexeme: "BOTH OF", attribute: "And Comparison"});
-                                    count += 1;
-                                }else if(ofSplitStack[k] === "EITHER"){
-                                    k += 1;
-                                    tokens.push({id: count, lexeme: "EITHER OF", attribute: "Or comparison"});
                                     count += 1;
                                 }else{
                                     tokens.push({id: count, lexeme: ofSplitStack[k], attribute: "Value"});
@@ -411,10 +348,12 @@ var textAnalyzer = (content) => {
                     }
                 }
 
-                else if(result2 = re.REMAINDER.exec(result[3])){
+                else if(result2 = re.MODULO.exec(result[3])){
                     tokens.push({id: count, lexeme: result2[1], attribute: "Modular opcode"});
                     count += 1;
                     anSplitStack = result2[2].split(/\s(AN)\s/);
+                    anSplitStack.push(result2[3]);
+                    anSplitStack.push(result2[4]);
                     for(j = 0; j < anSplitStack.length; j++){
                         ofSplitStack = anSplitStack[j].split(/\s(OF)\s/);
                         if(ofSplitStack.length > 1){
@@ -447,13 +386,58 @@ var textAnalyzer = (content) => {
                                     k += 1;
                                     tokens.push({id: count, lexeme: "SMALLR OF", attribute: "Min opcode"});
                                     count += 1;
-                                }else if(ofSplitStack[k] === "BOTH"){
-                                    k += 1;
-                                    tokens.push({id: count, lexeme: "BOTH OF", attribute: "And Comparison"});
+                                }else{
+                                    tokens.push({id: count, lexeme: ofSplitStack[k], attribute: "Value"});
                                     count += 1;
-                                }else if(ofSplitStack[k] === "EITHER"){
+                                }
+                            }
+                        }else if(ofSplitStack[0] === "AN"){
+                            tokens.push({id: count, lexeme: ofSplitStack[0], attribute: "Combination opcode"});
+                            count += 1;
+                        }else{
+                            tokens.push({id: count, lexeme: ofSplitStack[0], attribute: "Value"});
+                            count += 1;
+                        }
+                    }
+                }
+                
+                else if(result2 = re.MAX.exec(result[3])){
+                    tokens.push({id: count, lexeme: result2[1], attribute: "Maximum Compare Operand"});
+                    count += 1;
+                    anSplitStack = result2[2].split(/\s(AN)\s/);
+                    anSplitStack.push(result2[3]);
+                    anSplitStack.push(result2[4]);
+                    for(j = 0; j < anSplitStack.length; j++){
+                        ofSplitStack = anSplitStack[j].split(/\s(OF)\s/);
+                        if(ofSplitStack.length > 1){
+                            for(k = 0; k < ofSplitStack.length; k++){
+                                if(ofSplitStack[k] === "SUM"){
                                     k += 1;
-                                    tokens.push({id: count, lexeme: "EITHER OF", attribute: "Or comparison"});
+                                    tokens.push({id: count, lexeme: "SUM OF", attribute: "Addition opcode"});
+                                    count += 1;
+                                }else if(ofSplitStack[k] === "DIFF"){
+                                    k += 1;
+                                    tokens.push({id: count, lexeme: "DIFF OF", attribute: "Subtraction opcode"});
+                                    count += 1;
+                                }else if(ofSplitStack[k] === "PRODUKT"){
+                                    k += 1;
+                                    tokens.push({id: count, lexeme: "PRODUKT OF", attribute: "Multiplication opcode"});
+                                    count += 1;
+                                }else if(ofSplitStack[k] === "QUOSHUNT"){
+                                    k += 1;
+                                    tokens.push({id: count, lexeme: "QUOSHUNT OF", attribute: "Division opcode"});
+                                    count += 1;
+                                }else if(ofSplitStack[k] === "MOD"){
+                                    k += 1;
+                                    tokens.push({id: count, lexeme: "MOD OF", attribute: "Modular opcode"});
+                                    count += 1;
+                                }else if(ofSplitStack[k] === "BIGGR"){
+                                    k += 1;
+                                    tokens.push({id: count, lexeme: "BIGGR OF", attribute: "Max opcode"});
+                                    count += 1;
+                                }else if(ofSplitStack[k] === "SMALLR"){
+                                    k += 1;
+                                    tokens.push({id: count, lexeme: "SMALLR OF", attribute: "Min opcode"});
                                     count += 1;
                                 }else{
                                     tokens.push({id: count, lexeme: ofSplitStack[k], attribute: "Value"});
@@ -468,12 +452,76 @@ var textAnalyzer = (content) => {
                             count += 1;
                         }
                     }
-                }else{
+                }
+                
+                else if(result2 = re.MIN.exec(result[3])){
+                    tokens.push({id: count, lexeme: result2[1], attribute: "Minimum Compare Operand"});
+                    count += 1;
+                    anSplitStack = result2[2].split(/\s(AN)\s/);
+                    anSplitStack.push(result2[3]);
+                    anSplitStack.push(result2[4]);
+                    for(j = 0; j < anSplitStack.length; j++){
+                        ofSplitStack = anSplitStack[j].split(/\s(OF)\s/);
+                        if(ofSplitStack.length > 1){
+                            for(k = 0; k < ofSplitStack.length; k++){
+                                if(ofSplitStack[k] === "SUM"){
+                                    k += 1;
+                                    tokens.push({id: count, lexeme: "SUM OF", attribute: "Addition opcode"});
+                                    count += 1;
+                                }else if(ofSplitStack[k] === "DIFF"){
+                                    k += 1;
+                                    tokens.push({id: count, lexeme: "DIFF OF", attribute: "Subtraction opcode"});
+                                    count += 1;
+                                }else if(ofSplitStack[k] === "PRODUKT"){
+                                    k += 1;
+                                    tokens.push({id: count, lexeme: "PRODUKT OF", attribute: "Multiplication opcode"});
+                                    count += 1;
+                                }else if(ofSplitStack[k] === "QUOSHUNT"){
+                                    k += 1;
+                                    tokens.push({id: count, lexeme: "QUOSHUNT OF", attribute: "Division opcode"});
+                                    count += 1;
+                                }else if(ofSplitStack[k] === "MOD"){
+                                    k += 1;
+                                    tokens.push({id: count, lexeme: "MOD OF", attribute: "Modular opcode"});
+                                    count += 1;
+                                }else if(ofSplitStack[k] === "BIGGR"){
+                                    k += 1;
+                                    tokens.push({id: count, lexeme: "BIGGR OF", attribute: "Max opcode"});
+                                    count += 1;
+                                }else if(ofSplitStack[k] === "SMALLR"){
+                                    k += 1;
+                                    tokens.push({id: count, lexeme: "SMALLR OF", attribute: "Min opcode"});
+                                    count += 1;
+                                }else{
+                                    tokens.push({id: count, lexeme: ofSplitStack[k], attribute: "Value"});
+                                    count += 1;
+                                }
+                            }
+                        }else if(ofSplitStack[0] === "AN"){
+                            tokens.push({id: count, lexeme: ofSplitStack[0], attribute: "Combination opcode"});
+                            count += 1;
+                        }else{
+                            tokens.push({id: count, lexeme: ofSplitStack[0], attribute: "Value"});
+                            count += 1;
+                        }
+                    }
+                }
+                
+                else{
                     tokens.push({id: count, lexeme: result[3], attribute: "Value"});
                     count += 1;
                 }
             }
+
+            if(commentflag === 1){
+                tokens.push({id: count, lexeme: commentCheck[2], attribute: "Single line comment declaration"});
+                count += 1;
+                tokens.push({id: count, lexeme: commentCheck[3], attribute: "Comment content"});
+                count += 1;
+                commentflag = 0;
+            }
         }
+
 
     for(let i = 0; i < tokens.length; i++){
         console.log(tokens[i]);
