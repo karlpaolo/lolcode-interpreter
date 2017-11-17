@@ -11,7 +11,6 @@ var anSplitStack = [];
 var tokens = [];
 var count = 0;
 
-// Lines contains the array of lines from the text file
 var textAnalyzer = (content) => {
     
     lines = content.split(/\r?\n/); //Instead of reading from the text file, the "content" variable that will be split should be the string inside the text field of the UI
@@ -473,7 +472,11 @@ var textAnalyzer = (content) => {
                     count += 1;
                 }
             }
+            else if(result = re.GETINPUT.exec(lines[i])){
+                tokens.push({});
+            }
         }
+
 
     for(let i = 0; i < tokens.length; i++){
         console.log(tokens[i]);
