@@ -506,11 +506,76 @@ var textAnalyzer = (content) => {
                         }
                     }
                 }
-                
+
                 else{
                     tokens.push({id: count, lexeme: result[3], attribute: "Value"});
                     count += 1;
                 }
+            }
+
+            else if(result = re.PRINT.exec(lines[i])){
+                tokens.push({id: count, lexeme: result[1], attribute: "Print Indicator"});
+                count += 1;
+                tokens.push({id: count, lexeme: result[2], attribute: "Variable for printing"});
+                count += 1;
+            }
+
+            else if(result = re.GETINPUT.exec(lines[i])){
+                tokens.push({id: count, lexeme: result[1], attribute: "Print Indicator"});
+                count += 1;
+                tokens.push({id: count, lexeme: result[2], attribute: "Variable for printing"});
+                count += 1;
+            }
+            // O RLY?
+            else if(result = re.STARTIF.exec(lines[i])){
+                tokens.push({id: count, lexeme: result[1], attribute: "Start if statement delimiter"});
+                count += 1;
+            }
+
+            // YA RLY
+            else if(result = re.IFTRUE.exec(lines[i])){
+                tokens.push({id: count, lexeme: result[1], attribute: "If statement true indicator"});
+                lines[i] = result[2];
+                i -= 1;
+                count += 1;
+            }
+
+            // MEBBE
+            else if(result = re.ELSEIF.exec(lines[i])){
+                tokens.push({id: count, lexeme: result[1], attribute: "ELSE-IF statement indicator"});
+                lines[i] = result[2];
+                i -= 1;
+                count += 1;
+            }
+
+            //NO WAI
+            else if(result = re.ELSE.exec(lines[i])){
+                tokens.push({id: count, lexeme: result[1], attribute: "Else statement indicator"});
+                lines[i] = result[2];
+                i -= 1;
+                count += 1;
+            }
+
+            //OIC
+            else if(result = re.ENDIF.exec(lines[i])){
+                tokens.push({id: count, lexeme: result[1], attribute: "If statement end delimiter"});
+                count += 1;
+            } 
+
+            // IM IN YR 
+            else if(result = re.LOOPSTART.exec(lines[i])){
+                tokens.push({id: count, lexeme: result[1], attribute: "Loop start delimiter"});
+                count += 1;
+                tokens.push({id: count, lexeme: result[2], attribute: "Loop variable"});
+                count += 1;
+            }
+            
+            // IM OUTTA YR 
+            else if(result = re.LOOPEND.exec(lines[i])){
+                tokens.push({id: count, lexeme: result[1], attribute: "Loop end delimiter"});
+                count += 1;
+                tokens.push({id: count, lexeme: result[2], attribute: "Loop variable"});
+                count += 1;
             }
 
             if(commentflag === 1){
@@ -521,11 +586,7 @@ var textAnalyzer = (content) => {
                 commentflag = 0;
             }
         }
-
-
-    for(let i = 0; i < tokens.length; i++){
-        console.log(tokens[i]);
-    }
+        
     return tokens;
 }
 

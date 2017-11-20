@@ -5,7 +5,6 @@ const Regex = {
     SINGLECOMMENT: /(.*)?\s?(!O)(BTW)\s(.*)/,
     MULTICOMMENTSTART: /(OBTW)\s?(.*)?/,
     MULTICOMMENTEND: /(.*)?\s?(TLDR)/,
-    MULTIMCOMMENTSINGLE: /(OBTW)\s(.*)\s(TLDR)/,
     VARIABLEIDENTIFIER: /((I)\s(HAS)\s(A))\s(.*)/, //I HAS A var, I HAS A var2
     VARIABLEASSIGNVALUE: /(.*)\s(ITZ)\s(.*)/,
     VARIABLEASSIGNTYPE: /(.*)\s(ITZ A)\s(.*)/,
@@ -31,23 +30,27 @@ const Regex = {
     CONCAT: /(SMOOSH)\s(.*)/, //Separated by AN
     TYPECASTEXPRESSION:/(MAEK)\s(.*)\s(A)\s(NUMBR|NUMBAR|YARN|TROOF|TYPE)/, // A is type assignment operand 
     TYPECASTVARIABLE: (/(.*)\s(IS NOW A)\s(NUMBR|NUMBAR|YARN|TROOF|TYPE)/),
-    PRINT: /(VISIBLE)\s(")?(.*)(")?/,
+    PRINT: /(VISIBLE)\s("?.*"?)/,
     GETINPUT: /(GIMMEH)\s(.*)/,
-    STARTIF: /(.*)\s(O RLY?)/,
-    IFTRUE: /(YA RLY)/,
-    //MEBBE
-    //NO WAI
-    //OIC
+    STARTIF: /(O RLY?)/,
+    IFTRUE: /(YA RLY)(.*)/,
+    ELSEIF: /(MEBBE)(.*)/,
+    ELSE: /(NO WAI)(.*)/,
+    ENDIF: /(OIC)/,
     //WTF? WTF: /(WTF?)/,
     //OMG  OMG: /(OMG)/,
     //OMGWTF OMGWTF: /(OMGWTF)/,
-    //IM IN YR  LOOPSTART: /(IM IN YR)\s(.*)/,
+    LOOPSTART: /(IM IN YR)\s(.*)/,
     //UPPIN     UPPIN: /(.*)(UPPIN)\s(.*))/, 
     //NERFIN    NERFIN: /(.*)(NERFIN)\s(.*))/,
     //YR
     //TIL
-    //WILE
-    LOOPEND: /(IM OUTTA YR)\s(.*)/
+    //W ILE
+    LOOPEND: /(IM OUTTA YR)\s(.*)/,
+
+    //ERRORS
+    MULTIMCOMMENTSINGLE: /(OBTW)\s(.*)\s(TLDR)/,
+    MULTILINECOMMENTBETWEEN: /(.*)OBTW/
 }
 
 module.exports = Regex;
