@@ -1,6 +1,7 @@
 import React,{Component} from 'react';
-import {Header, Segment} from 'semantic-ui-react';
+import {Header, Segment, Button, Table} from 'semantic-ui-react';
 import textAnalyzer from './textScanner';
+import errorScanner from './errorScanner';
 
 class UI extends Component {
     constructor(props){
@@ -10,12 +11,8 @@ class UI extends Component {
             input: "",
             label: "",
 			inputHasError: true,
-            lexemes:[{id:0, lexeme: "qweqA", attribute:"Bqwe"},
-            {id:1, lexeme: "123123123123B", attribute:"123123123123B"},
-            {id:2, lexeme: "Bqwe", attribute:"Bqwe"},
-            {id:3, lexeme: "qewB", attribute:"Bqwe"},
-            {id:4, lexeme: "qweeB", attribute:"Bqwe"},
-            {id:5, lexeme: "qewC", attribute:"Cqwe"}]
+            lexemes:[],
+            errors:[]
         }
 
         this.handleinputChange = this.handleinputChange.bind(this);
@@ -27,7 +24,7 @@ class UI extends Component {
 	}
 
     handleRun(e){  
-        this.setState({lexemes: textAnalyzer(this.state.input)});
+        this.setState({errors: errorScanner(this.state.input),lexemes: textAnalyzer(this.state.input)});
         e.preventDefault();
     }
 
@@ -47,13 +44,43 @@ class UI extends Component {
                   changeHandler={this.handleRun}  
                 />
                 </Segment>
-                <Segment inverted color='yellow'>
+               
+                <Segment inverted color='teal'>
                     <SourceOutput 
                         list = {this.state.lexemes}
                         label = {this.state.label}
                     />
                 </Segment>
+
+                <Segment>
+                    <SyntaxError
+                        list = {this.state.errors}
+                    />
+                </Segment>
+
                 </Segment.Group>
+            </div>
+        );
+    }
+}
+
+class SyntaxError extends Component {
+    render() {
+        return(
+            <div>
+                <Header>ERRORS</Header>
+                <Table>
+                    <Table.HeaderCell>ERRORS</Table.HeaderCell>
+                    <Table.Body>
+                    {this.props.list.map((items) => {
+                        return(
+                            <Table.Row>
+                                <Table.Cell>{items.errorText}</Table.Cell>
+                            </Table.Row>
+                            );
+                    })}
+                </Table.Body>
+                </Table>                
             </div>
         );
     }
@@ -81,13 +108,9 @@ class RunButton extends Component{
     render(){
 		return(
 			<div>
-				<form onSubmit={this.props.changeHandler}>
-					<input
-						id="signup-button"
-						type="submit"
-						value="RUN"
-					/>
-				</form>
+				
+                <Button onClick={this.props.changeHandler}>
+                RUN</Button>
 			</div>
 		);
 	}
@@ -96,27 +119,32 @@ class RunButton extends Component{
 class SourceOutput extends Component{
 	render(){
 		return(
-			<div>
-            <h3>LEXEMES</h3>
-			{this.props.list.map((items) => {
-				return(
-                    <table className="table">
-                            <tr>
-                                <th>Lexeme</th>
-                                <th>Attribute</th>
-                            </tr>
-                        <tr value={items.id}>
-                            <td>{items.lexeme}</td>
-                            <td>{items.attribute}</td>
-                        </tr>
-                    </table>
-				);
-			}
-            )}
-            {this.props.label}
+			<div className='output'>
+            <Header>LEXEMES</Header>
+			
+            <Table celled inverted selectable size='small'>
+                <Table.Header>
+                    <Table.Row>
+                        <Table.HeaderCell>Lexeme</Table.HeaderCell>
+                        <Table.HeaderCell>Attribute</Table.HeaderCell>
+                    </Table.Row>
+                </Table.Header>
+
+                <Table.Body>
+                    {this.props.list.map((items) => {
+                        return(
+                            <Table.Row>
+                                <Table.Cell>{items.lexeme}</Table.Cell>
+                                <Table.Cell>{items.attribute}</Table.Cell>
+                            </Table.Row>
+                            );
+                    })}
+                </Table.Body>
+
+            </Table>
             </div>
-		);
-	}
+        );
+    }
 }
 
 
